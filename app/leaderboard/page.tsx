@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
 
   // Socket.IO: score:updated → re-sort leaderboard
   useEffect(() => {
-    function onScoreUpdated(_record: ScoreRecord) {
+    function onScoreUpdated() {
       // Re-fetch to get updated aggregated leaderboard
       fetchLeaderboard()
     }

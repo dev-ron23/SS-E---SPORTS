@@ -23,7 +23,7 @@ export default function AdminPage() {
   const { addToast } = useToast()
 
   // Settings
-  const [settings, setSettings] = useState<TournamentSettings | null>(null)
+  const [, setSettings] = useState<TournamentSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

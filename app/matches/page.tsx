@@ -69,10 +69,8 @@ function MatchTimer({ startedAt, stopped }: { startedAt: string; stopped: boolea
 
 function GroupMatchCard({
   group,
-  onUpdate,
 }: {
   group: GroupState
-  onUpdate: (updated: Partial<GroupState> & { group_no: number }) => void
 }) {
   const { addToast } = useToast()
 
@@ -411,7 +409,7 @@ export default function MatchesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {groups.map((group) => (
-            <GroupMatchCard key={group.group_no} group={group} onUpdate={updateGroup} />
+            <GroupMatchCard key={group.group_no} group={group} />
           ))}
         </div>
       )}
