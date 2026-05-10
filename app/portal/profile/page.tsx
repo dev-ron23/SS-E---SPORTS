@@ -257,7 +257,7 @@ export default function PortalProfilePage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/bridge/player/${discordId}`).then((r) => r.json())
+      const res = await fetch(`/api/player/${discordId}`).then((r) => r.json())
       if (res.success && res.data) {
         setData(res.data)
         setFormTeamName(res.data.squad.team_name)
@@ -314,7 +314,7 @@ export default function PortalProfilePage() {
     }
 
     try {
-      const res = await fetch('/api/bridge/player/self-edit', {
+      const res = await fetch('/api/player/self-edit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
