@@ -3,9 +3,11 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Edit3, Save, X, Shield, Users, Hash, Gamepad2, AlertCircle, CheckCircle2, LogIn } from 'lucide-react'
+import Image from 'next/image'
+import { User, Edit3, Save, X, Shield, Users, Hash, Gamepad2, AlertCircle, CheckCircle2, LogIn, UserMinus, UserPlus } from 'lucide-react'
 import { useToast } from '@/components/shared/ToastNotification'
 import type { Squad } from '@/types/index'
+import type { DiscordUserProfile } from '@/app/api/discord/user/[id]/route'
 
 // ── Liquid Glass primitives ────────────────────────────────────────────────
 function LiquidCard({ children, className = '', glow = 'none', style: s = {} }: {
@@ -57,6 +59,181 @@ function CyberInput({ label, value, onChange, placeholder, disabled = false, ico
 interface PlayerSquadData {
   squad: Squad
   role: 'leader' | 'player'
+}
+
+// ── Discord profile cache ──────────────────────────────────────────────────
+const profileCache = new Map<string, DiscordUserProfile | null>()
+
+async function fetchDiscordProfile(id: string): Promise<DiscordUserProfile | null> {
+  if (profileCache.has(id)) return profileCache.get(id)!
+  try {
+    const res = await fetch(`/api/discord/user/${id}`)
+    if (!res.ok) { profileCache.set(id, null); return null }
+    const data: DiscordUserProfile = await res.json()
+    profileCache.set(id, data)
+    return data
+  } catch {
+    profileCache.set(id, null)
+    return null
+  }
+}
+
+// ── Discord Player Card ────────────────────────────────────────────────────
+function DiscordPlayerCard({
+  discordId,
+  isMe,
+  isLeader,
+  gameUid,
+}: {
+  discordId: string
+  isMe: boolean
+  isLeader: boolean
+  gameUid?: string
+}) {
+  const [profile, setProfile] = useState<DiscordUserProfile | null | 'loading'>('loading')
+
+  useEffect(() => {
+    fetchDiscordProfile(discordId).then(setProfile)
+  }, [discordId])
+
+  const displayName = profile && profile !== 'loading'
+    ? (profile.global_name ?? profile.username)
+    : null
+
+  // Accent color from Discord profile or fallback
+  const accentHex = profile && profile !== 'loading' && profile.accent_color
+    ? `#${profile.accent_color.toString(16).padStart(6, '0')}`
+    : isLeader ? '#00d4ff' : '#8b5cf6'
+
+  const borderColor = isMe
+    ? 'rgba(0,212,255,0.4)'
+    : isLeader
+    ? 'rgba(0,212,255,0.2)'
+    : 'rgba(255,255,255,0.08)'
+
+  const bgColor = isMe
+    ? 'rgba(0,212,255,0.06)'
+    : 'rgba(255,255,255,0.03)'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl"
+      style={{
+        background: bgColor,
+        border: `1px solid ${borderColor}`,
+        boxShadow: isMe ? `0 0 20px rgba(0,212,255,0.1)` : 'none',
+      }}
+    >
+      {/* Banner */}
+      {profile && profile !== 'loading' && profile.bannerUrl ? (
+        <div className="relative h-16 overflow-hidden">
+          <Image
+            src={profile.bannerUrl}
+            alt=""
+            fill
+            className="object-cover"
+            unoptimized
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6) 100%)' }} />
+        </div>
+      ) : (
+        <div
+          className="h-10"
+          style={{
+            background: profile && profile !== 'loading' && profile.banner_color
+              ? `linear-gradient(135deg, ${profile.banner_color}40, ${profile.banner_color}10)`
+              : `linear-gradient(135deg, ${accentHex}20, transparent)`,
+          }}
+        />
+      )}
+
+      <div className="px-3 pb-3">
+        {/* Avatar row */}
+        <div className="flex items-end gap-3 -mt-5 mb-2">
+          <div className="relative shrink-0">
+            {profile && profile !== 'loading' && profile.avatarUrl ? (
+              <div className="relative">
+                <Image
+                  src={profile.avatarUrl}
+                  alt={displayName ?? discordId}
+                  width={44}
+                  height={44}
+                  className="rounded-xl"
+                  style={{ outline: `2px solid ${borderColor}`, outlineOffset: '1px' }}
+                  unoptimized
+                />
+                {/* Profile effect / decoration overlay */}
+                {profile.avatarDecorationUrl && (
+                  <Image
+                    src={profile.avatarDecorationUrl}
+                    alt=""
+                    width={56}
+                    height={56}
+                    className="absolute -inset-1.5 pointer-events-none"
+                    unoptimized
+                  />
+                )}
+              </div>
+            ) : (
+              <div
+                className="size-11 rounded-xl flex items-center justify-center font-orbitron font-black text-sm"
+                style={{
+                  background: `${accentHex}20`,
+                  border: `2px solid ${borderColor}`,
+                  color: accentHex,
+                }}
+              >
+                {profile === 'loading' ? (
+                  <div className="size-4 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+                ) : (
+                  <User className="size-4" />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Badges */}
+          <div className="flex items-center gap-1.5 pb-0.5 flex-wrap">
+            {isLeader && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold tracking-wider"
+                style={{ background: 'rgba(0,212,255,0.12)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.25)' }}
+              >
+                LEAD
+              </span>
+            )}
+            {isMe && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold tracking-wider"
+                style={{ background: 'rgba(0,255,127,0.12)', color: '#00ff7f', border: '1px solid rgba(0,255,127,0.25)' }}
+              >
+                YOU
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Name + ID */}
+        <div className="space-y-0.5">
+          {displayName ? (
+            <p className="font-semibold text-white text-sm leading-tight">{displayName}</p>
+          ) : (
+            <p className="font-mono text-xs text-white/40 leading-tight truncate">{discordId}</p>
+          )}
+          {displayName && (
+            <p className="font-mono text-[10px] text-white/30 truncate">{discordId}</p>
+          )}
+          {gameUid && (
+            <p className="font-mono text-[10px] text-white/40 mt-1">
+              UID: <span className="text-white/60">{gameUid}</span>
+            </p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  )
 }
 
 export default function PortalProfilePage() {
@@ -397,6 +574,26 @@ export default function PortalProfilePage() {
                   icon={<Gamepad2 className="size-4" />}
                 />
 
+                {/* Leader: swap/remove players */}
+                {isLeader && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-mono uppercase tracking-widest text-white/40">Manage Players (Leader Only)</p>
+                    <div
+                      className="px-3 py-2.5 rounded-xl text-xs text-white/40 space-y-1"
+                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    >
+                      <p className="flex items-center gap-1.5">
+                        <UserMinus className="size-3.5 text-red-400 shrink-0" />
+                        To remove a player, contact an admin or use the Discord bot.
+                      </p>
+                      <p className="flex items-center gap-1.5">
+                        <UserPlus className="size-3.5 text-[#00d4ff] shrink-0" />
+                        To add a player, use <span className="font-mono text-white/60">/edit_reg</span> in Discord.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Error */}
                 {error && (
                   <div
@@ -475,54 +672,29 @@ export default function PortalProfilePage() {
             <span className="ml-auto text-xs text-white/30">{squad.player_ids.length} players</span>
           </div>
 
-          <div className="space-y-2">
-            {squad.player_ids.map((pid) => {
-              const isMe = pid === discordId
-              const uid = squad.player_uids?.[pid]
-              const isSquadLeader = pid === squad.leader_id
-              return (
-                <div
-                  key={pid}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all"
-                  style={isMe ? {
-                    background: 'rgba(0,212,255,0.06)',
-                    border: '1px solid rgba(0,212,255,0.2)',
-                    boxShadow: '0 0 12px rgba(0,212,255,0.08)',
-                  } : {
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <div
-                    className="size-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
-                    style={isMe ? {
-                      background: 'rgba(0,212,255,0.15)', color: '#00d4ff',
-                    } : {
-                      background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)',
-                    }}
-                  >
-                    {isSquadLeader ? <Shield className="size-3.5" /> : <User className="size-3.5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-mono text-xs truncate ${isMe ? 'text-[#00d4ff]' : 'text-white/60'}`}>{pid}</p>
-                    {uid && <p className="text-xs text-white/30 font-mono truncate">{uid}</p>}
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {isSquadLeader && (
-                      <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(0,212,255,0.1)', color: '#00d4ff' }}>
-                        LEAD
-                      </span>
-                    )}
-                    {isMe && (
-                      <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(0,255,127,0.1)', color: '#00ff7f' }}>
-                        YOU
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+          {/* Discord profile cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {squad.player_ids.map((pid) => (
+              <DiscordPlayerCard
+                key={pid}
+                discordId={pid}
+                isMe={pid === discordId}
+                isLeader={pid === squad.leader_id}
+                gameUid={squad.player_uids?.[pid]}
+              />
+            ))}
           </div>
+
+          {/* Leader: swap/remove player controls */}
+          {isLeader && !editing && (
+            <div
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs text-white/40"
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <Shield className="size-3.5 text-[#00d4ff] shrink-0" />
+              As squad leader, click <strong className="text-white/60 mx-1">Edit Profile</strong> to change the team name, update player UIDs, or swap players.
+            </div>
+          )}
         </LiquidCard>
       </motion.div>
 
