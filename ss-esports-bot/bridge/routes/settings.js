@@ -25,13 +25,14 @@ router.get('/settings', (req, res) => {
     max_slots: parseInt(db.getSetting('max_slots') || '48', 10),
     game_mode: db.getSetting('game_mode') || 'Battle Royale',
     registration_locked: db.getSetting('registration_locked') === '1',
+    logo_url: db.getSetting('logo_url') || null,
   };
   res.json({ success: true, data: settings });
 });
 
 // POST /api/update-settings
 router.post('/update-settings', (req, res) => {
-  const { tournament_name, prize_pool, max_slots, game_mode } = req.body;
+  const { tournament_name, prize_pool, max_slots, game_mode, logo_url } = req.body;
 
   if (max_slots !== undefined) {
     const parsed = Number(max_slots);
@@ -43,6 +44,7 @@ router.post('/update-settings', (req, res) => {
   if (tournament_name !== undefined) db.setSetting('tournament_name', String(tournament_name));
   if (prize_pool !== undefined) db.setSetting('prize_pool', String(prize_pool));
   if (game_mode !== undefined) db.setSetting('game_mode', String(game_mode));
+  if (logo_url !== undefined) db.setSetting('logo_url', String(logo_url));
 
   const updated = {
     tournament_name: db.getSetting('tournament_name'),
