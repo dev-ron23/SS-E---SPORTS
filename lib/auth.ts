@@ -1,9 +1,21 @@
 import type { NextAuthOptions } from 'next-auth'
 import DiscordProvider from 'next-auth/providers/discord'
 
-const ADMINISTRATOR_PERMISSION = BigInt(0x8)
+const DEFAULT_DASHBOARD_ADMIN_ROLE_ID = '1438586285345341450'
 
-async function fetchGuildMember(accessToken: string, guildId: string) {
+type DiscordGuildMember = {
+  roles?: string[]
+}
+
+function getDashboardAdminRoleId() {
+  return process.env.DASHBOARD_ADMIN_ROLE_ID?.trim() || DEFAULT_DASHBOARD_ADMIN_ROLE_ID
+}
+
+function hasDashboardAdminRole(member: DiscordGuildMember | null) {
+  return member?.roles?.includes(getDashboardAdminRoleId()) ?? false
+}
+
+async function fetchGuildMember(accessToken: string, guildId: string): Promise<DiscordGuildMember | null> {
   const res = await fetch(
     `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
     {
@@ -53,10 +65,7 @@ export const authOptions: NextAuthOptions = {
         const member = await fetchGuildMember(account.access_token, guildId)
         if (!member) return '/denied'
 
-        const permissions = BigInt(member.permissions ?? '0')
-        const isAdmin = (permissions & ADMINISTRATOR_PERMISSION) !== BigInt(0)
-
-        if (!isAdmin) return '/denied'
+        if (!hasDashboardAdminRole(member)) return '/denied'
 
         return true
       } catch (err) {
@@ -74,13 +83,15 @@ export const authOptions: NextAuthOptions = {
           try {
             const member = await fetchGuildMember(account.access_token, guildId)
             if (member) {
-              const permissions = BigInt(member.permissions ?? '0')
-              token.isAdmin = (permissions & ADMINISTRATOR_PERMISSION) !== BigInt(0)
+              token.isAdmin = hasDashboardAdminRole(member)
+              token.dashboardAdminRoleId = getDashboardAdminRoleId()
             } else {
               token.isAdmin = false
+              token.dashboardAdminRoleId = getDashboardAdminRoleId()
             }
           } catch {
             token.isAdmin = false
+            token.dashboardAdminRoleId = getDashboardAdminRoleId()
           }
         }
       }

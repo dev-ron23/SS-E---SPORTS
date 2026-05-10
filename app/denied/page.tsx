@@ -60,7 +60,7 @@ export default function DeniedPage() {
             You don&apos;t have admin access to this dashboard.
           </p>
           <p className="text-white/40 text-xs mt-1">
-            Only server administrators can sign in.
+            Only members with the dashboard admin role can sign in.
           </p>
         </div>
 

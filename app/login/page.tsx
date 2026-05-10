@@ -65,7 +65,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-white/30 text-xs text-center">
-          Only server administrators can access this dashboard.
+          Only members with the dashboard admin role can access this dashboard.
         </p>
       </motion.div>
     </main>
