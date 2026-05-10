@@ -430,6 +430,15 @@ async function handleAutoMod(message, client) {
   const guild = message.guild;
   const moderator = 'AutoMod';
 
+  // Check whitelist — skip AutoMod for whitelisted users and channels
+  const rawUsers = db.getSetting('automod_whitelist_users') ?? '[]';
+  const rawChannels = db.getSetting('automod_whitelist_channels') ?? '[]';
+  const whitelistUsers = JSON.parse(rawUsers);
+  const whitelistChannels = JSON.parse(rawChannels);
+
+  if (whitelistUsers.includes(userId)) return;
+  if (whitelistChannels.includes(message.channelId)) return;
+
   // Rule 1: Spam detection (Requirement 19.1)
   if (await _checkSpam(message, userId, guild, moderator, client)) {
     return; // Already handled
