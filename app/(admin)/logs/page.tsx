@@ -164,51 +164,52 @@ export default function LogsPage() {
         )}
       </GlassCard>
 
-      {/* Logs table */}
+      {/* Logs table — scrollable on mobile */}
       <GlassCard className="p-0 overflow-hidden">
-        {/* Header */}
-        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_8rem] gap-2 px-4 py-2 border-b border-white/10 text-xs text-white/40 uppercase tracking-wider">
-          <span>Action</span>
-          <span>Actor</span>
-          <span>Target</span>
-          <span>Details</span>
-          <span className="text-right">Timestamp</span>
-        </div>
-
-        {paginated.length === 0 ? (
-          <p className="text-sm text-white/40 text-center py-8">No log entries found</p>
-        ) : (
-          <div className="divide-y divide-white/5">
-            {paginated.map((log) => (
-              <div
-                key={log.id}
-                className="grid grid-cols-[1fr_1fr_1fr_1fr_8rem] gap-2 px-4 py-2.5 text-sm hover:bg-white/3 transition-colors"
-              >
-                <span className="rounded-full bg-[#00d4ff]/10 text-[#00d4ff] px-2 py-0.5 text-xs font-medium self-center w-fit">
-                  {log.action}
-                </span>
-                <span className="text-white/70 font-mono text-xs self-center truncate">
-                  {log.actor_id ?? '—'}
-                </span>
-                <span className="text-[#8b5cf6] font-mono text-xs self-center truncate">
-                  {log.target_id ?? '—'}
-                </span>
-                <span className="text-white/40 text-xs self-center truncate">
-                  {log.details ?? '—'}
-                </span>
-                <span className="text-white/30 text-xs text-right self-center">
-                  {new Date(log.timestamp).toLocaleString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                  })}
-                </span>
-              </div>
-            ))}
+        <div className="overflow-x-auto">
+          {/* Header */}
+          <div className="min-w-[600px] grid grid-cols-[1fr_1fr_1fr_1fr_8rem] gap-2 px-4 py-2 border-b border-white/10 text-xs text-white/40 uppercase tracking-wider">
+            <span>Action</span>
+            <span>Actor</span>
+            <span>Target</span>
+            <span>Details</span>
+            <span className="text-right">Timestamp</span>
           </div>
-        )}
+
+          {paginated.length === 0 ? (
+            <p className="text-sm text-white/40 text-center py-8">No log entries found</p>
+          ) : (
+            <div className="divide-y divide-white/5 min-w-[600px]">
+              {paginated.map((log) => (
+                <div
+                  key={log.id}
+                  className="grid grid-cols-[1fr_1fr_1fr_1fr_8rem] gap-2 px-4 py-2.5 text-sm hover:bg-white/3 transition-colors"
+                >
+                  <span className="rounded-full bg-[#00d4ff]/10 text-[#00d4ff] px-2 py-0.5 text-xs font-medium self-center w-fit">
+                    {log.action}
+                  </span>
+                  <span className="text-white/70 font-mono text-xs self-center truncate">
+                    {log.actor_id ?? '—'}
+                  </span>
+                  <span className="text-[#8b5cf6] font-mono text-xs self-center truncate">
+                    {log.target_id ?? '—'}
+                  </span>
+                  <span className="text-white/40 text-xs self-center truncate">
+                    {log.details ?? '—'}
+                  </span>
+                  <span className="text-white/30 text-xs text-right self-center">
+                    {new Date(log.timestamp).toLocaleString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </GlassCard>
 
       {/* Pagination */}

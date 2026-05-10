@@ -34,6 +34,12 @@ export const metadata: Metadata = {
   description: "SS E-Sports Tournament System",
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
