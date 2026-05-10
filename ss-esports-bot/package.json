@@ -1,0 +1,27 @@
+{
+  "name": "ss-esports-bot",
+  "version": "1.0.0",
+  "description": "SS E-Sports Tournament Management Discord Bot",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test",
+    "test:db": "node --test database/db.test.js"
+  },
+  "dependencies": {
+    "@discordjs/rest": "^2.6.1",
+    "better-sqlite3": "^12.9.0",
+    "cors": "^2.8.6",
+    "discord-api-types": "^0.37.120",
+    "discord.js": "^14.26.4",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "fast-check": "^3.22.0",
+    "socket.io-client": "^4.8.3",
+    "supertest": "^7.2.2"
+  }
+}
