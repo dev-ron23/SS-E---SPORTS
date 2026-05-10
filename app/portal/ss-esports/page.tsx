@@ -9,6 +9,7 @@ import {
   LogIn, Shield, Calendar, Users, Star,
 } from 'lucide-react'
 import type { DiscordUserProfile } from '@/app/api/discord/user/[id]/route'
+import type { GuildMemberInfo } from '@/app/api/discord/member/[id]/route'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -269,11 +270,7 @@ function UserDetailCard() {
   const { data: session, status } = useSession()
   const [profile, setProfile] = useState<DiscordUserProfile | null>(null)
   const [presence, setPresence] = useState<PresenceData>({ status: 'offline' })
-  const [guildMember, setGuildMember] = useState<{
-    joined_at?: string
-    roles?: string[]
-    nick?: string | null
-  } | null>(null)
+  const [guildMember, setGuildMember] = useState<GuildMemberInfo | null>(null)
 
   const discordId = session?.user?.id ?? ''
 
@@ -493,6 +490,40 @@ function UserDetailCard() {
                   {a.state && <span className="text-white/30 ml-2 text-xs">{a.state}</span>}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Server Roles */}
+        {guildMember?.roles && guildMember.roles.length > 0 && (
+          <div
+            className="mt-3 px-3 py-2.5 rounded-xl"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <p className="text-xs font-mono uppercase tracking-widest text-white/30 mb-2 flex items-center gap-1">
+              <Shield className="size-3" /> Server Roles
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {guildMember.roles.map((role) => {
+                const color = role.colorHex || 'rgba(255,255,255,0.4)'
+                return (
+                  <span
+                    key={role.id}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                    style={{
+                      background: role.colorHex ? `${role.colorHex}18` : 'rgba(255,255,255,0.06)',
+                      border: `1px solid ${role.colorHex ? `${role.colorHex}40` : 'rgba(255,255,255,0.12)'}`,
+                      color,
+                    }}
+                  >
+                    <span
+                      className="size-1.5 rounded-full inline-block shrink-0"
+                      style={{ background: color }}
+                    />
+                    {role.name}
+                  </span>
+                )
+              })}
             </div>
           </div>
         )}
