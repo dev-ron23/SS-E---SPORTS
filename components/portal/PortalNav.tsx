@@ -51,9 +51,16 @@ export function PortalNav() {
           </div>
           <span
             className="font-orbitron font-bold text-sm tracking-widest uppercase hidden sm:block"
-            style={{ color: '#00d4ff', textShadow: '0 0 12px rgba(0,212,255,0.5)' }}
+            style={{
+              background: 'linear-gradient(90deg, #00d4ff, #8b5cf6, #ffffff, #00d4ff)',
+              backgroundSize: '200% auto',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              animation: 'gradient-flow 3s linear infinite',
+            }}
           >
-            Esports
+            SS E-Sports
           </span>
         </Link>
 

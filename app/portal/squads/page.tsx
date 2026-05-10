@@ -67,7 +67,39 @@ function SquadDetailPanel({ squad, onClose }: { squad: Squad; onClose: () => voi
           <div className="flex items-center gap-3">
             <StatusDot status={squad.status} />
             <span className="text-sm text-white/60 capitalize">{squad.status}</span>
-            {squad.group_no !== null && <GroupBadge groupNo={squad.group_no} />}
+            {squad.group_no !== null && (
+              squad.registration_channel_id ? (
+                <a
+                  href={`https://discord.com/channels/${process.env.NEXT_PUBLIC_GUILD_ID ?? ''}/${squad.registration_channel_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open group channel"
+                >
+                  <GroupBadge groupNo={squad.group_no} />
+                </a>
+              ) : (
+                <GroupBadge groupNo={squad.group_no} />
+              )
+            )}
+          </div>
+
+          {/* Squad ID with link */}
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-white/30 mb-1">Squad ID</p>
+            {squad.registration_msg_id && squad.registration_channel_id ? (
+              <a
+                href={`https://discord.com/channels/${process.env.NEXT_PUBLIC_GUILD_ID ?? ''}/${squad.registration_channel_id}/${squad.registration_msg_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-[#00d4ff] text-sm hover:underline hover:brightness-125 transition-all inline-flex items-center gap-1"
+                title="View registration message"
+              >
+                {squad.squad_id}
+                <svg className="size-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+              </a>
+            ) : (
+              <p className="font-mono text-[#00d4ff] text-sm">{squad.squad_id}</p>
+            )}
           </div>
 
           {/* Leader */}

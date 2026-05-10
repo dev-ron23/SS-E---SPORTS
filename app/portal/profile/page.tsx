@@ -61,6 +61,42 @@ interface PlayerSquadData {
   role: 'leader' | 'player'
 }
 
+// ── Group channel link ─────────────────────────────────────────────────────
+function GroupChannelLink({ groupNo }: { groupNo: number }) {
+  const [channelId, setChannelId] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    fetch('/api/bridge/groups')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) {
+          const group = res.data.find((g: { group_no: number; channel_id: string }) => g.group_no === groupNo)
+          if (group?.channel_id) setChannelId(group.channel_id)
+        }
+      })
+      .catch(() => null)
+  }, [groupNo])
+
+  const guildId = process.env.NEXT_PUBLIC_GUILD_ID
+
+  if (channelId && guildId) {
+    return (
+      <a
+        href={`https://discord.com/channels/${guildId}/${channelId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-white/70 text-sm hover:text-[#00d4ff] hover:underline transition-all inline-flex items-center gap-1"
+        title="Open group channel on Discord"
+      >
+        Group {groupNo}
+        <svg className="size-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+      </a>
+    )
+  }
+
+  return <p className="text-white/70 text-sm">Group {groupNo}</p>
+}
+
 // ── Discord profile cache ──────────────────────────────────────────────────
 const profileCache = new Map<string, DiscordUserProfile | null>()
 
@@ -628,7 +664,20 @@ export default function PortalProfilePage() {
                   </div>
                   <div>
                     <p className="text-xs font-mono uppercase tracking-widest text-white/30 mb-1">Squad ID</p>
-                    <p className="font-mono text-[#00d4ff] text-sm">{squad.squad_id}</p>
+                    {squad.registration_msg_id && squad.registration_channel_id ? (
+                      <a
+                        href={`https://discord.com/channels/${process.env.NEXT_PUBLIC_GUILD_ID ?? squad.registration_channel_id}/${squad.registration_channel_id}/${squad.registration_msg_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[#00d4ff] text-sm hover:underline hover:brightness-125 transition-all inline-flex items-center gap-1"
+                        title="View registration message on Discord"
+                      >
+                        {squad.squad_id}
+                        <svg className="size-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                      </a>
+                    ) : (
+                      <p className="font-mono text-[#00d4ff] text-sm">{squad.squad_id}</p>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs font-mono uppercase tracking-widest text-white/30 mb-1">Your UID</p>
@@ -636,7 +685,11 @@ export default function PortalProfilePage() {
                   </div>
                   <div>
                     <p className="text-xs font-mono uppercase tracking-widest text-white/30 mb-1">Group</p>
-                    <p className="text-white/70 text-sm">{squad.group_no !== null ? `Group ${squad.group_no}` : 'Not assigned'}</p>
+                    {squad.group_no !== null ? (
+                      <GroupChannelLink groupNo={squad.group_no} />
+                    ) : (
+                      <p className="text-white/70 text-sm">Not assigned</p>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs font-mono uppercase tracking-widest text-white/30 mb-1">Status</p>

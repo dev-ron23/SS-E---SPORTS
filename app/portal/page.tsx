@@ -117,10 +117,12 @@ export default function PortalHomePage() {
             <h1
               className="font-orbitron text-4xl md:text-6xl font-black tracking-tight"
               style={{
-                background: 'linear-gradient(135deg, #00d4ff 0%, #8b5cf6 50%, #00ff7f 100%)',
+                background: 'linear-gradient(90deg, #00d4ff, #8b5cf6, #ffffff, #00d4ff, #8b5cf6)',
+                backgroundSize: '200% auto',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
+                animation: 'gradient-flow 3s linear infinite',
                 filter: 'drop-shadow(0 0 30px rgba(0,212,255,0.4))',
               }}
             >
