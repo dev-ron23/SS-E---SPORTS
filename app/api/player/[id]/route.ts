@@ -27,7 +27,11 @@ export async function GET(
   const bridgeUrl = process.env.NEXT_PUBLIC_BRIDGE_URL ?? 'http://localhost:3001'
 
   try {
-    const upstream = await fetch(`${bridgeUrl}/api/player/${id}`)
+    const upstream = await fetch(`${bridgeUrl}/api/player/${id}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.BRIDGE_API_KEY ?? ''}`,
+      },
+    })
     const data = await upstream.json()
     return NextResponse.json(data, { status: upstream.status })
   } catch {
