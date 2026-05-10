@@ -1,28 +1,21 @@
 import type { NextAuthOptions } from 'next-auth'
 import DiscordProvider from 'next-auth/providers/discord'
 
-const DEFAULT_DASHBOARD_ADMIN_ROLE_ID = '1438586285345341450'
+// Owner role ID — only this role gets admin access
+const OWNER_ROLE_ID = process.env.OWNER_ROLE_ID?.trim() || '1407286622957080597'
 
 type DiscordGuildMember = {
   roles?: string[]
 }
 
-function getDashboardAdminRoleId() {
-  return process.env.DASHBOARD_ADMIN_ROLE_ID?.trim() || DEFAULT_DASHBOARD_ADMIN_ROLE_ID
-}
-
-function hasDashboardAdminRole(member: DiscordGuildMember | null) {
-  return member?.roles?.includes(getDashboardAdminRoleId()) ?? false
+function hasOwnerRole(member: DiscordGuildMember | null): boolean {
+  return member?.roles?.includes(OWNER_ROLE_ID) ?? false
 }
 
 async function fetchGuildMember(accessToken: string, guildId: string): Promise<DiscordGuildMember | null> {
   const res = await fetch(
     `https://discord.com/api/v10/users/@me/guilds/${guildId}/member`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+    { headers: { Authorization: `Bearer ${accessToken}` } }
   )
   if (!res.ok) return null
   return res.json()
@@ -47,31 +40,15 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    signIn: '/login',
-    error: '/denied',
+    signIn: '/portal/login',
+    error: '/portal/denied',
   },
 
   callbacks: {
+    // Allow ALL Discord users to sign in — role check happens in jwt/middleware
     async signIn({ account }) {
       if (!account?.access_token) return false
-
-      const guildId = process.env.GUILD_ID
-      if (!guildId) {
-        console.error('GUILD_ID environment variable is not set')
-        return false
-      }
-
-      try {
-        const member = await fetchGuildMember(account.access_token, guildId)
-        if (!member) return '/denied'
-
-        if (!hasDashboardAdminRole(member)) return '/denied'
-
-        return true
-      } catch (err) {
-        console.error('Error checking guild membership:', err)
-        return '/denied'
-      }
+      return true
     },
 
     async jwt({ token, account }) {
@@ -82,16 +59,11 @@ export const authOptions: NextAuthOptions = {
         if (guildId) {
           try {
             const member = await fetchGuildMember(account.access_token, guildId)
-            if (member) {
-              token.isAdmin = hasDashboardAdminRole(member)
-              token.dashboardAdminRoleId = getDashboardAdminRoleId()
-            } else {
-              token.isAdmin = false
-              token.dashboardAdminRoleId = getDashboardAdminRoleId()
-            }
+            token.isAdmin = hasOwnerRole(member)
+            token.isGuildMember = member !== null
           } catch {
             token.isAdmin = false
-            token.dashboardAdminRoleId = getDashboardAdminRoleId()
+            token.isGuildMember = false
           }
         }
       }
@@ -105,6 +77,7 @@ export const authOptions: NextAuthOptions = {
           ...session.user,
           id: token.sub ?? '',
           isAdmin: (token.isAdmin as boolean) ?? false,
+          isGuildMember: (token.isGuildMember as boolean) ?? false,
         },
       }
     },

@@ -1,0 +1,31 @@
+feat: Public portal + role-based auth + player self-edit
+
+Auth changes:
+- Owner role (1407286622957080597) = admin access only
+- All Discord users can sign in as players
+- Middleware: /portal/* public, player routes need session, admin routes need owner role
+
+New portal pages (cyberpunk liquid glass theme):
+- /portal - Tournament info, stats, prize pool, slot progress
+- /portal/leaderboard - Live rankings with per-match breakdown
+- /portal/squads - Squad browser with detail panel
+- /portal/matches - Live match status per group with timers
+- /portal/profile - Player self-edit (team name for leaders, own UID for all)
+- /portal/login - Discord sign-in page
+- /portal/denied - Access denied page
+
+Player self-edit:
+- Players can only edit their own data (UID)
+- Only squad leader can change team name
+- Cannot edit other players data
+- Changes sync to Discord via bridge
+
+Bot changes:
+- New bridge route: GET /api/player/:id and POST /api/player/self-edit
+- Ownership verified server-side before any edit
+
+Layout restructure:
+- Root layout: minimal (html/body/fonts/session/toast)
+- app/(admin)/layout.tsx: Sidebar + TopBar + Socket shell
+- app/portal/layout.tsx: Portal nav + cyberpunk background
+- All admin pages moved to app/(admin)/

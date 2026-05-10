@@ -41,7 +41,7 @@ export default function LoginPage() {
 
         {/* Discord login button */}
         <button
-          onClick={() => signIn('discord')}
+          onClick={() => signIn('discord', { callbackUrl: '/' })}
           className={cn(
             'w-full flex items-center justify-center gap-3 px-6 py-3 rounded-xl',
             'bg-[#5865F2] hover:bg-[#4752C4] active:scale-[0.97]',

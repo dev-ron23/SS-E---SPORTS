@@ -14,6 +14,7 @@ import {
   ScrollText,
   Settings,
   LogOut,
+  Globe,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -41,7 +42,6 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        // Hidden on mobile — MobileTabBar takes over below 768px
         'hidden md:flex flex-col w-60 shrink-0 h-screen sticky top-0',
         'border-r border-white/10',
         'bg-white/[0.03] backdrop-blur-xl'
@@ -52,6 +52,7 @@ export function Sidebar() {
         <span className="font-orbitron text-lg font-bold text-[#00d4ff] tracking-widest uppercase">
           SS Esports
         </span>
+        <p className="text-xs text-white/30 mt-0.5 font-mono">Admin Panel</p>
       </div>
 
       {/* Nav links */}
@@ -79,6 +80,18 @@ export function Sidebar() {
             </Link>
           )
         })}
+
+        {/* Divider */}
+        <div className="my-2 border-t border-white/5" />
+
+        {/* Portal link */}
+        <Link
+          href="/portal"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 text-white/40 hover:text-[#00ff7f] hover:bg-[#00ff7f]/5 border-l-2 border-transparent pl-[10px]"
+        >
+          <Globe className="size-5 text-white/30" />
+          Public Portal
+        </Link>
       </nav>
 
       {/* Bottom: avatar + logout */}
@@ -99,9 +112,10 @@ export function Sidebar() {
           <p className="text-xs font-medium text-white truncate">
             {session?.user?.name ?? 'Admin'}
           </p>
+          <p className="text-xs text-[#00d4ff]/60 font-mono">Owner</p>
         </div>
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={() => signOut({ callbackUrl: '/portal/login' })}
           className="text-white/40 hover:text-red-400 transition-colors"
           aria-label="Sign out"
         >

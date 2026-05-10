@@ -4,10 +4,6 @@ import "./globals.css";
 import { Orbitron, Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import SessionProviderWrapper from "@/components/providers/SessionProviderWrapper";
-import { SocketProvider } from "@/components/live/SocketProvider";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { TopBar } from "@/components/layout/TopBar";
-import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { ToastProvider } from "@/components/shared/ToastNotification";
 
 const orbitron = Orbitron({
@@ -34,8 +30,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SS E-Sports Dashboard",
-  description: "SS E-Sports Tournament Management Dashboard",
+  title: "SS E-Sports",
+  description: "SS E-Sports Tournament System",
 };
 
 export default function RootLayout({
@@ -46,30 +42,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(
-        "font-sans",
-        orbitron.variable,
-        inter.variable
-      )}
+      className={cn("font-sans", orbitron.variable, inter.variable)}
     >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0f] text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#050508] text-white`}
       >
         <SessionProviderWrapper>
-          <SocketProvider>
-            <ToastProvider>
-              <div className="flex h-screen overflow-hidden">
-                <Sidebar />
-                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                  <TopBar />
-                  <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
-                    {children}
-                  </main>
-                </div>
-              </div>
-              <MobileTabBar />
-            </ToastProvider>
-          </SocketProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </SessionProviderWrapper>
       </body>
     </html>

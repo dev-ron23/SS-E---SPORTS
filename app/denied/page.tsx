@@ -22,7 +22,6 @@ export default function DeniedPage() {
           'shadow-[0_0_40px_rgba(255,59,59,0.2)]'
         )}
       >
-        {/* Branding */}
         <span
           className="text-2xl font-bold tracking-widest text-white"
           style={{ fontFamily: 'var(--font-orbitron, Orbitron, sans-serif)' }}
@@ -30,7 +29,6 @@ export default function DeniedPage() {
           SS ESPORTS
         </span>
 
-        {/* User avatar */}
         {session?.user?.image && (
           <div className="relative">
             <Image
@@ -48,19 +46,18 @@ export default function DeniedPage() {
           </div>
         )}
 
-        {/* Message */}
         <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-xl font-bold text-red-400">Access Denied</h1>
+          <h1 className="text-xl font-bold text-red-400">Admin Access Denied</h1>
           {session?.user?.name && (
             <p className="text-white/60 text-sm">
               Hey <span className="text-white/90">{session.user.name}</span>,
             </p>
           )}
           <p className="text-white/60 text-sm">
-            You don&apos;t have admin access to this dashboard.
+            You don&apos;t have the Owner role required for the admin panel.
           </p>
           <p className="text-white/40 text-xs mt-1">
-            Only members with the dashboard admin role can sign in.
+            You can still access the public player portal.
           </p>
         </div>
 
@@ -68,20 +65,20 @@ export default function DeniedPage() {
 
         <div className="flex flex-col gap-3 w-full">
           <Link
-            href="/login"
+            href="/portal"
             className={cn(
               'w-full flex items-center justify-center px-6 py-3 rounded-xl',
-              'bg-white/5 hover:bg-white/10 border border-white/10',
-              'text-white/80 hover:text-white text-sm font-medium',
+              'bg-[#00d4ff]/10 hover:bg-[#00d4ff]/15 border border-[#00d4ff]/20',
+              'text-[#00d4ff] text-sm font-medium',
               'transition-all duration-200'
             )}
           >
-            ← Back to Login
+            Go to Player Portal →
           </Link>
 
           {session && (
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => signOut({ callbackUrl: '/portal' })}
               className={cn(
                 'w-full flex items-center justify-center px-6 py-3 rounded-xl',
                 'bg-red-500/10 hover:bg-red-500/20 border border-red-500/20',
