@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Users, Swords, Info, User, LogIn, LogOut, Menu, X, ShieldCheck } from 'lucide-react'
+import { Trophy, Users, Swords, Info, User, LogIn, LogOut, Menu, X, ShieldCheck, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/portal/leaderboard', label: 'Leaderboard', icon: <Trophy className="size-4" /> },
   { href: '/portal/squads', label: 'Squads', icon: <Users className="size-4" /> },
   { href: '/portal/matches', label: 'Matches', icon: <Swords className="size-4" /> },
+  { href: '/portal/ss-esports', label: 'SS E-Sports', icon: <Star className="size-4" /> },
 ]
 
 export function PortalNav() {

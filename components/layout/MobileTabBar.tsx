@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ScrollText,
   Settings,
+  Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,11 +25,10 @@ interface TabItem {
 const tabItems: TabItem[] = [
   { label: 'Overview',    href: '/',            icon: <LayoutDashboard className="size-5" /> },
   { label: 'Squads',      href: '/squads',       icon: <Users className="size-5" /> },
-  { label: 'Groups',      href: '/groups',       icon: <Grid3X3 className="size-5" /> },
   { label: 'Matches',     href: '/matches',      icon: <Swords className="size-5" /> },
   { label: 'Leaderboard', href: '/leaderboard',  icon: <Trophy className="size-5" /> },
   { label: 'Admin',       href: '/admin',        icon: <ShieldCheck className="size-5" /> },
-  { label: 'Logs',        href: '/logs',         icon: <ScrollText className="size-5" /> },
+  { label: 'Credits',     href: '/credits',      icon: <Star className="size-5" /> },
   { label: 'Settings',    href: '/settings',     icon: <Settings className="size-5" /> },
 ]
 

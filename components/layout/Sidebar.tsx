@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   Globe,
+  Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { label: 'Leaderboard', href: '/leaderboard',  icon: <Trophy className="size-5" /> },
   { label: 'Admin',       href: '/admin',        icon: <ShieldCheck className="size-5" /> },
   { label: 'Logs',        href: '/logs',         icon: <ScrollText className="size-5" /> },
+  { label: 'Credits',     href: '/credits',      icon: <Star className="size-5" /> },
   { label: 'Settings',    href: '/settings',     icon: <Settings className="size-5" /> },
 ]
 
