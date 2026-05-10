@@ -6,11 +6,9 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   Users,
-  Grid3X3,
   Swords,
   Trophy,
   ShieldCheck,
-  ScrollText,
   Settings,
   Star,
 } from 'lucide-react'
