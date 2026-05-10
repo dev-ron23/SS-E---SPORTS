@@ -73,6 +73,7 @@ export interface TournamentSettings {
   max_slots: number
   game_mode: string
   registration_locked: boolean
+  logo_url?: string | null
 }
 
 // Leaderboard entry (aggregated from scores)
