@@ -546,35 +546,21 @@ function UserDetailCard() {
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
-// ── Hardcoded fallback credits (shown when DB has no entries) ──────────────
+// ── Hardcoded fallback credits (only the bot — admin adds the rest) ────────
 const DEFAULT_CREDITS: CreditEntry[] = [
-  {
-    id: -1,
-    discord_id: '1332626290360193135',
-    display_name: '꧁• シ Ꮢ𝐨𝐜𝐤𝐬𝐭𝐚𝐫 ×͜×',
-    role_label: 'Founder & Developer',
-    category: 'owner',
-    description: 'Creator and developer of the SS E-Sports tournament system. Built the Discord bot, bridge server, and live dashboard from scratch.',
-    discord_url: 'https://discord.com/users/1332626290360193135',
-    github_url: null,
-    youtube_url: null,
-    instagram_url: null,
-    dm_url: 'https://discord.com/users/1332626290360193135',
-    display_order: 0,
-  },
   {
     id: -2,
     discord_id: '1440760650526756895',
-    display_name: 'SS E-Sports Bot',
-    role_label: 'Tournament Bot',
-    category: 'developer',
+    display_name: 'Official SS E-SPORTS BOT',
+    role_label: 'Official SS E-SPORTS BOT',
+    category: 'official',
     description: 'The official SS E-Sports tournament management bot. Handles squad registration, match management, scoring, leaderboard, moderation, and real-time dashboard sync.',
     discord_url: 'https://discord.com/users/1440760650526756895',
     github_url: null,
     youtube_url: null,
     instagram_url: null,
     dm_url: null,
-    display_order: 99,
+    display_order: 0,
   },
 ]
 
@@ -605,6 +591,7 @@ export default function SSEsportsPage() {
   const categories = Array.from(new Set(credits.map((c) => c.category)))
 
   const categoryLabels: Record<string, string> = {
+    official: 'Official',
     owner: 'Owners',
     developer: 'Developers',
     manager: 'Managers',
