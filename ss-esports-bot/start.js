@@ -67,7 +67,13 @@ async function downloadCloudflared() {
 function startTunnel() {
   console.log(`[tunnel] Starting tunnel on port ${BRIDGE_PORT}...`);
 
-  const tunnel = spawn(CLOUDFLARED_PATH, ['tunnel', '--url', `http://localhost:${BRIDGE_PORT}`], {
+  // If a tunnel token is provided, use named tunnel (permanent URL)
+  const tunnelToken = process.env.CLOUDFLARE_TUNNEL_TOKEN;
+  const args = tunnelToken
+    ? ['tunnel', '--no-autoupdate', 'run', '--token', tunnelToken]
+    : ['tunnel', '--url', `http://localhost:${BRIDGE_PORT}`];
+
+  const tunnel = spawn(CLOUDFLARED_PATH, args, {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
