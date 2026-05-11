@@ -32,11 +32,6 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "SS E-Sports",
   description: "SS E-Sports Tournament System",
-  icons: {
-    icon: "https://i.postimg.cc/90mPCKFd/logo.jpg",
-    shortcut: "https://i.postimg.cc/90mPCKFd/logo.jpg",
-    apple: "https://i.postimg.cc/90mPCKFd/logo.jpg",
-  },
 };
 
 export const viewport = {
