@@ -5,6 +5,11 @@ import { PortalNav } from '@/components/portal/PortalNav'
 export const metadata: Metadata = {
   title: 'SS Esports — Tournament Portal',
   description: 'Live tournament standings, matches, and squad info',
+  icons: {
+    icon: 'https://i.postimg.cc/90mPCKFd/logo.jpg',
+    shortcut: 'https://i.postimg.cc/90mPCKFd/logo.jpg',
+    apple: 'https://i.postimg.cc/90mPCKFd/logo.jpg',
+  },
 }
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
