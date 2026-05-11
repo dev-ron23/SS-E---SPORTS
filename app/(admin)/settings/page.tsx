@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useEffect, useState, useCallback, useRef } from 'react'
-import Image from 'next/image'
 import { bridgeGet, bridgePost } from '@/lib/api'
 import { socket } from '@/lib/socket'
 import type { TournamentSettings } from '@/types/index'
