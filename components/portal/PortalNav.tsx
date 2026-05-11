@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signIn, signOut } from 'next-auth/react'
@@ -8,52 +8,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, Users, Swords, Info, User, LogIn, LogOut, Menu, X, ShieldCheck, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ── Logo brand — shows uploaded logo or gradient text fallback ─────────────
+const SS_LOGO = 'https://i.postimg.cc/90mPCKFd/logo.jpg'
+
+// ── Logo brand ─────────────────────────────────────────────────────────────
 function LogoBrand() {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('/api/bridge/settings')
-      .then((r) => r.json())
-      .then((res) => { if (res.success && res.data?.logo_url) setLogoUrl(res.data.logo_url) })
-      .catch(() => null)
-  }, [])
-
-  if (logoUrl) {
-    return (
-      <div className="flex items-center gap-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoUrl} alt="SS E-Sports" className="h-8 w-auto object-contain" />
-        <span
-          className="font-orbitron font-bold text-sm tracking-widest uppercase hidden sm:block"
-          style={{
-            background: 'linear-gradient(90deg, #00d4ff, #8b5cf6, #ffffff, #00d4ff)',
-            backgroundSize: '200% auto',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            animation: 'gradient-flow 3s linear infinite',
-          }}
-        >
-          SS E-Sports
-        </span>
-      </div>
-    )
-  }
-
   return (
     <div className="flex items-center gap-2">
-      <div
-        className="size-8 rounded-lg flex items-center justify-center font-orbitron font-black text-xs"
-        style={{
-          background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.2))',
-          border: '1px solid rgba(0,212,255,0.3)',
-          boxShadow: '0 0 12px rgba(0,212,255,0.2)',
-          color: '#00d4ff',
-        }}
-      >
-        SS
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={SS_LOGO} alt="SS E-Sports" className="h-8 w-auto object-contain rounded" />
       <span
         className="font-orbitron font-bold text-sm tracking-widest uppercase hidden sm:block"
         style={{

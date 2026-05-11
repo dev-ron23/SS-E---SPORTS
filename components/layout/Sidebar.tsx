@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
@@ -40,14 +40,6 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('/api/bridge/settings')
-      .then((r) => r.json())
-      .then((res) => { if (res.success && res.data?.logo_url) setLogoUrl(res.data.logo_url) })
-      .catch(() => null)
-  }, [])
 
   return (
     <aside
@@ -59,21 +51,8 @@ export function Sidebar() {
     >
       {/* Logo / brand */}
       <div className="px-5 py-5 border-b border-white/10 flex items-center gap-3">
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="SS E-Sports" className="h-8 w-auto object-contain" />
-        ) : (
-          <div
-            className="size-8 rounded-lg flex items-center justify-center font-orbitron font-black text-xs shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(139,92,246,0.2))',
-              border: '1px solid rgba(0,212,255,0.3)',
-              color: '#00d4ff',
-            }}
-          >
-            SS
-          </div>
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="https://i.postimg.cc/90mPCKFd/logo.jpg" alt="SS E-Sports" className="h-8 w-auto object-contain rounded" />
         <div>
           <span className="font-orbitron text-sm font-bold text-[#00d4ff] tracking-widest uppercase">
             SS Esports
