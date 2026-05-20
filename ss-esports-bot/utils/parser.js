@@ -9,13 +9,12 @@
 /**
  * Parse a registration message and extract squad data.
  *
- * Algorithm:
- *   1. Normalize content (trim, collapse whitespace)
- *   2. Extract team name via regex patterns
- *   3. Extract all @mentions
- *   4. Extract UIDs and pair with nearest preceding mention
- *   5. Deduplicate mentions (keep first occurrence)
- *   6. Validate: teamName exists AND mentions.length >= 2
+ * Team name extraction strategy (in priority order):
+ *  1. "Team Name : Rockstar Esports" → "Rockstar Esports"
+ *  2. "Team Name - Rockstar Esports" → "Rockstar Esports"
+ *  3. "Team Name :- Rockstar Esports" → "Rockstar Esports"
+ *  4. "Team Name Rockstar Esports\nPlayer 1" → "Rockstar Esports"
+ *  5. Stops at first mention, "PLAYER", "IGN", newline, or end of string
  *
  * @param {string} content - Raw message content
  * @returns {{ valid: boolean, teamName?: string, players?: string[], uids?: Object, reason?: string }}
@@ -25,29 +24,48 @@ function parseRegistration(content) {
     return { valid: false, reason: 'Empty or invalid message content.' };
   }
 
-  // Step 1: Normalize content
-  const normalized = content.trim().replace(/\s+/g, ' ');
+  // Step 1: Normalize — collapse multiple spaces/newlines into single space
+  // but keep newlines as a separator for team name boundary detection
+  const normalized = content.trim();
 
-  // Step 2: Extract team name
-  // Try "team name: ..." first, then "team: ..."
+  // Step 2: Extract team name with improved patterns
   let teamName = null;
 
-  const teamNamePatterns = [
-    /team\s*name\s*[:\-]\s*(.+?)(?=<@|\n|uid|$)/i,
-    /team\s*[:\-]\s*(.+?)(?=<@|\n|uid|$)/i,
-  ];
+  // Pattern A: "Team Name : <name>" or "Team Name - <name>" or "Team Name :- <name>"
+  // Stops at: first @mention, "PLAYER", "IGN", newline, or end
+  const patternWithSeparator = /team\s*name\s*[:\-]{1,2}\s*(.+?)(?=<@|player\s*\d|ign\s*[:\-]|\n|$)/i;
+  const matchA = normalized.match(patternWithSeparator);
+  if (matchA) {
+    teamName = matchA[1].trim().replace(/[\s,|:]+$/, '').trim();
+  }
 
-  for (const pattern of teamNamePatterns) {
-    const match = normalized.match(pattern);
-    if (match) {
-      teamName = match[1].trim();
-      // Remove trailing whitespace and common separators
-      teamName = teamName.replace(/[\s,|]+$/, '').trim();
-      if (teamName.length > 0) break;
+  // Pattern B: "Team Name <name>" (no separator) — stops at newline, @mention, or "PLAYER"
+  if (!teamName || teamName.length === 0) {
+    const patternNoSep = /team\s*name\s+(.+?)(?=<@|player\s*\d|ign\s*[:\-]|\n|$)/i;
+    const matchB = normalized.match(patternNoSep);
+    if (matchB) {
+      teamName = matchB[1].trim().replace(/[\s,|:]+$/, '').trim();
     }
   }
 
-  // Step 3: Extract all @mentions: <@USER_ID> or <@!USER_ID>
+  // Pattern C: "Team : <name>" or "Team - <name>"
+  if (!teamName || teamName.length === 0) {
+    const patternTeam = /\bteam\s*[:\-]{1,2}\s*(.+?)(?=<@|player\s*\d|ign\s*[:\-]|\n|$)/i;
+    const matchC = normalized.match(patternTeam);
+    if (matchC) {
+      teamName = matchC[1].trim().replace(/[\s,|:]+$/, '').trim();
+    }
+  }
+
+  // Clean up team name — remove trailing "player", "ign", numbers
+  if (teamName) {
+    teamName = teamName
+      .replace(/\s*(player\s*\d.*|ign\s*[:\-].*)$/i, '')
+      .replace(/[\s,|:]+$/, '')
+      .trim();
+  }
+
+  // Step 3: Extract all @mentions
   const mentionRegex = /<@!?(\d+)>/g;
   const allMentions = [];
   let mentionMatch;
@@ -55,7 +73,7 @@ function parseRegistration(content) {
     allMentions.push(mentionMatch[1]);
   }
 
-  // Step 5: Deduplicate mentions (keep first occurrence)
+  // Deduplicate mentions
   const seen = new Set();
   const players = [];
   for (const id of allMentions) {
@@ -66,32 +84,25 @@ function parseRegistration(content) {
   }
 
   // Step 4: Extract UIDs and pair with nearest preceding mention
-  // We need to find each UID and associate it with the mention that appears just before it
   const uids = {};
-
-  // Build a list of positions: mentions and UIDs in order
   const uidRegex = /uid\s*[:\-]\s*(\d+)/gi;
   const mentionPositions = [];
   const uidPositions = [];
 
-  // Reset and collect mention positions
   const mentionRegex2 = /<@!?(\d+)>/g;
   let m;
   while ((m = mentionRegex2.exec(normalized)) !== null) {
     mentionPositions.push({ index: m.index, id: m[1] });
   }
 
-  // Collect UID positions
   let u;
   while ((u = uidRegex.exec(normalized)) !== null) {
     uidPositions.push({ index: u.index, uid: u[1] });
   }
 
-  // For each UID, find the nearest preceding mention
   for (const uidEntry of uidPositions) {
     let nearestMention = null;
     let nearestDist = Infinity;
-
     for (const mentionEntry of mentionPositions) {
       if (mentionEntry.index < uidEntry.index) {
         const dist = uidEntry.index - mentionEntry.index;
@@ -101,15 +112,14 @@ function parseRegistration(content) {
         }
       }
     }
-
     if (nearestMention !== null) {
       uids[nearestMention] = uidEntry.uid;
     }
   }
 
-  // Step 6: Validate
-  if (!teamName) {
-    return { valid: false, reason: 'No team name found. Use "Team Name: ..." or "Team: ...".' };
+  // Step 5: Validate
+  if (!teamName || teamName.length === 0) {
+    return { valid: false, reason: 'No team name found. Use "Team Name: ..." format.' };
   }
 
   if (players.length < 2) {
@@ -119,13 +129,10 @@ function parseRegistration(content) {
     };
   }
 
-  // Limit to 5 players max (2-4 mandatory + 1 optional per spec)
-  const acceptedPlayers = players.slice(0, 5);
-
   return {
     valid: true,
     teamName,
-    players: acceptedPlayers,
+    players: players.slice(0, 5),
     uids,
   };
 }
