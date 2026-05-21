@@ -27,14 +27,42 @@ router.get('/:discord_id', (req, res) => {
     return res.status(400).json({ success: false, error: 'Missing discord_id' });
   }
 
-  const playerSquad = db.getActivePlayerSquad(discord_id);
-  if (!playerSquad) {
-    return res.json({ success: true, data: null }); // not registered
+  // Primary lookup: players table
+  let playerSquad = db.getActivePlayerSquad(discord_id);
+  let squad = null;
+  let role = 'player';
+
+  if (playerSquad) {
+    squad = db.getSquadById(playerSquad.squad_id);
+    role = playerSquad.role;
+  } else {
+    // Fallback: scan squads.player_ids JSON array
+    // This handles players registered before the players table was fully populated
+    const allSquads = db.getAllActiveSquads();
+    for (const s of allSquads) {
+      if (s.player_ids && s.player_ids.includes(discord_id)) {
+        squad = s;
+        role = s.leader_id === discord_id ? 'leader' : 'player';
+
+        // Auto-repair: insert missing player record
+        try {
+          db.insertPlayer({
+            discord_id,
+            squad_id: s.squad_id,
+            game_uid: s.player_uids?.[discord_id] ?? null,
+            role,
+            warnings: 0,
+            is_muted: 0,
+          });
+        } catch { /* already exists or constraint error — ignore */ }
+
+        break;
+      }
+    }
   }
 
-  const squad = db.getSquadById(playerSquad.squad_id);
   if (!squad) {
-    return res.json({ success: true, data: null });
+    return res.json({ success: true, data: null }); // not registered
   }
 
   const players = db.getSquadPlayers(squad.squad_id);
@@ -44,7 +72,7 @@ router.get('/:discord_id', (req, res) => {
     data: {
       squad,
       players,
-      role: playerSquad.role,
+      role,
     },
   });
 });
