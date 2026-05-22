@@ -60,10 +60,11 @@ module.exports = {
       for (let i = 0; i < openSlots && unassigned.length > 0; i++) {
         const squad = unassigned.shift();
         try {
-          await groups.assignSquadToGroup(squad, guild);
+          // Force assign to this specific group (bypass the squad_no calculation)
+          await _forceAssignToGroup(squad, group.group_no, guild);
           assigned++;
           groupsToUpdate.add(group.group_no);
-          log.push(`✅ ${squad.squad_id} (${squad.team_name}) → Group ${group.group_no}`);
+          log.push(`✅ ${squad.squad_id} (${squad.team_name}) → Group ${group.group_no} (filled gap)`);
 
           // Update confirmed embed with new group info
           await _updateConfirmedEmbed(guild, squad.squad_id);
