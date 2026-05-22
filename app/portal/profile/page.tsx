@@ -294,14 +294,20 @@ export default function PortalProfilePage() {
     setError(null)
     try {
       const res = await fetch(`/api/player/${discordId}`).then((r) => r.json())
-      if (res.success && res.data) {
-        setData(res.data)
-        setFormTeamName(res.data.squad.team_name)
-        setFormUid(res.data.squad.player_uids?.[discordId] ?? '')
+      if (res.success) {
+        if (res.data) {
+          setData(res.data)
+          setFormTeamName(res.data.squad.team_name)
+          setFormUid(res.data.squad.player_uids?.[discordId] ?? '')
+        } else {
+          setData(null)
+        }
       } else {
         setData(null)
+        setError(res.error ?? 'Failed to load your squad data.')
       }
     } catch {
+      setData(null)
       setError('Failed to load your squad data.')
     } finally {
       setLoading(false)
@@ -422,7 +428,7 @@ export default function PortalProfilePage() {
     )
   }
 
-  // ── Not registered ─────────────────────────────────────────────────────
+  // ── Not registered / error state ─────────────────────────────────────
   if (!data) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -433,13 +439,21 @@ export default function PortalProfilePage() {
         >
           <div
             className="size-16 rounded-2xl flex items-center justify-center mx-auto"
-            style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}
+            style={{ background: error ? 'rgba(244,63,94,0.1)' : 'rgba(245,158,11,0.1)', border: error ? '1px solid rgba(244,63,94,0.2)' : '1px solid rgba(245,158,11,0.2)' }}
           >
-            <AlertCircle className="size-8 text-amber-400" />
+            {error ? (
+              <AlertCircle className="size-8 text-red-400" />
+            ) : (
+              <AlertCircle className="size-8 text-amber-400" />
+            )}
           </div>
-          <h2 className="font-orbitron text-xl font-bold text-white">Not Registered</h2>
+          <h2 className="font-orbitron text-xl font-bold text-white">
+            {error ? 'Unable to load profile' : 'Not Registered'}
+          </h2>
           <p className="text-white/40 text-sm">
-            You are not part of any active squad. Register in the Discord server to join the tournament.
+            {error
+              ? error
+              : 'You are not part of any active squad. Register in the Discord server to join the tournament.'}
           </p>
           <div
             className="px-4 py-3 rounded-xl text-sm text-white/50"

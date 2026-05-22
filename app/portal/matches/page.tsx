@@ -142,25 +142,35 @@ export default function PortalMatchesPage() {
   const [groups, setGroups] = useState<GroupState[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<MatchStatus | 'all'>('all')
+  const [error, setError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
+    setError(null)
     try {
       const [gRes, sRes] = await Promise.all([
         fetch('/api/bridge/groups').then((r) => r.json()),
         fetch('/api/bridge/squads').then((r) => r.json()),
       ])
-      if (gRes.success && sRes.success) {
-        const squadMap = new Map<string, Squad>()
-        sRes.data.forEach((s: Squad) => squadMap.set(s.squad_id, s))
-        const gs: GroupState[] = gRes.data.map((g: Group) => ({
-          ...g,
-          squads: g.squad_ids.map((id) => squadMap.get(id)).filter(Boolean) as Squad[],
-          matchStatus: getMatchStatus(g),
-        }))
-        setGroups(gs)
+      if (!gRes.success) {
+        throw new Error(gRes.error || 'Failed to load groups')
       }
-    } catch { /* silently fail */ }
-    finally { setLoading(false) }
+      if (!sRes.success) {
+        throw new Error(sRes.error || 'Failed to load squads')
+      }
+      const squadMap = new Map<string, Squad>()
+      sRes.data.forEach((s: Squad) => squadMap.set(s.squad_id, s))
+      const gs: GroupState[] = gRes.data.map((g: Group) => ({
+        ...g,
+        squads: g.squad_ids.map((id) => squadMap.get(id)).filter(Boolean) as Squad[],
+        matchStatus: getMatchStatus(g),
+      }))
+      setGroups(gs)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load matches.')
+      setGroups([])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -233,6 +243,18 @@ export default function PortalMatchesPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-48 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.03)' }} />
           ))}
+        </div>
+      ) : error ? (
+        <div className="py-20 text-center">
+          <Swords className="size-12 text-red-400 mx-auto mb-3" />
+          <p className="text-red-300 font-mono mb-2">{error}</p>
+          <button
+            onClick={fetchData}
+            className="px-4 py-2 rounded-lg text-sm font-medium"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+          >
+            Retry
+          </button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-20 text-center">

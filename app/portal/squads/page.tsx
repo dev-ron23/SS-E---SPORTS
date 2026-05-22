@@ -152,6 +152,7 @@ function SquadDetailPanel({ squad, onClose }: { squad: Squad; onClose: () => voi
 export default function PortalSquadsPage() {
   const [squads, setSquads] = useState<Squad[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'cancelled'>('active')
@@ -159,11 +160,18 @@ export default function PortalSquadsPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchSquads = useCallback(async () => {
+    setError(null)
     try {
       const res = await fetch('/api/bridge/squads').then((r) => r.json())
-      if (res.success) setSquads(res.data)
-    } catch { /* silently fail */ }
-    finally { setLoading(false) }
+      if (res.success) {
+        setSquads(res.data)
+      } else {
+        throw new Error(res.error || 'Failed to load squads')
+      }
+    } catch (err) {
+      setSquads([])
+      setError(err instanceof Error ? err.message : 'Unable to load squads.')
+    } finally { setLoading(false) }
   }, [])
 
   useEffect(() => { fetchSquads() }, [fetchSquads])
@@ -253,6 +261,18 @@ export default function PortalSquadsPage() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="h-14 animate-pulse" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }} />
             ))}
+          </div>
+        ) : error ? (
+          <div className="py-16 text-center">
+            <Users className="size-10 text-red-400 mx-auto mb-3" />
+            <p className="text-red-300 font-mono text-sm mb-3">{error}</p>
+            <button
+              onClick={fetchSquads}
+              className="px-4 py-2 rounded-lg text-sm font-medium"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+            >
+              Retry
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
