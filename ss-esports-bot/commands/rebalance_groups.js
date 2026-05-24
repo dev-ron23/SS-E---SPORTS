@@ -2,12 +2,9 @@
 
 /**
  * /rebalance_groups command
- * Fills empty group slots with unassigned squads.
- * After assigning, updates:
- *  - Group channel listings (new group gets the squad added)
- *  - Confirmed-squads embed (updated with new group info)
- *  - Audit log
- *  - Real-time dashboard (socket events via assignSquadToGroup)
+ * Assigns all unassigned active squads to groups using fill-first logic:
+ *  - Fills existing groups with open slots first (lowest group number first)
+ *  - Only creates a new group when all existing groups are full
  */
 
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
@@ -17,13 +14,12 @@ const embedBuilder = require('../utils/embedBuilder');
 const logger = require('../utils/logger');
 const emitter = require('../bridge/emitter');
 
-const MAX_PER_GROUP = 12;
 const CONFIRMED_SQUADS_CHANNEL_ID = '1502217351897288847';
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('rebalance_groups')
-    .setDescription('Fill empty group slots with unassigned squads and update all channels')
+    .setDescription('Fill empty group slots with unassigned squads (fill-first)')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(interaction) {
@@ -42,89 +38,49 @@ module.exports = {
       });
     }
 
-    const allGroups = db.getAllGroups().sort((a, b) => a.group_no - b.group_no);
     let assigned = 0;
     const log = [];
-    const groupsToUpdate = new Set();
+    const groupsUpdated = new Set();
 
-    // ── Step 1: Fill existing groups with open slots ──────────────────────
-    for (const group of allGroups) {
-      const activeInGroup = group.squad_ids.filter((id) => {
-        const s = db.getSquadById(id);
-        return s && s.status === 'active';
-      }).length;
-
-      const openSlots = MAX_PER_GROUP - activeInGroup;
-      if (openSlots <= 0) continue;
-
-      for (let i = 0; i < openSlots && unassigned.length > 0; i++) {
-        const squad = unassigned.shift();
-        try {
-          // Force assign to this specific group (bypass the squad_no calculation)
-          await _forceAssignToGroup(squad, group.group_no, guild);
-          assigned++;
-          groupsToUpdate.add(group.group_no);
-          log.push(`✅ ${squad.squad_id} (${squad.team_name}) → Group ${group.group_no} (filled gap)`);
-
-          // Update confirmed embed with new group info
-          await _updateConfirmedEmbed(guild, squad.squad_id);
-
-          // Emit socket event
-          const updatedSquad = db.getSquadById(squad.squad_id);
-          if (updatedSquad) emitter.emit('squad:updated', updatedSquad);
-
-        } catch (err) {
-          log.push(`❌ ${squad.squad_id} failed: ${err.message}`);
-        }
-      }
-
-      if (unassigned.length === 0) break;
-    }
-
-    // ── Step 2: Remaining squads go into new groups ───────────────────────
-    while (unassigned.length > 0) {
-      const squad = unassigned.shift();
+    // assignSquadToGroup now uses fill-first internally — just call it for each
+    for (const squad of unassigned) {
       try {
-        await groups.assignSquadToGroup(squad, guild);
+        const groupNo = await groups.assignSquadToGroup(squad, guild);
         assigned++;
-        const updatedSquad = db.getSquadById(squad.squad_id);
-        const newGroupNo = updatedSquad?.group_no;
-        if (newGroupNo !== null && newGroupNo !== undefined) {
-          groupsToUpdate.add(newGroupNo);
-        }
-        log.push(`✅ ${squad.squad_id} (${squad.team_name}) → Group ${newGroupNo ?? '?'} (new)`);
+        groupsUpdated.add(groupNo);
+        log.push(`✅ ${squad.squad_id} (${squad.team_name}) → Group ${groupNo}`);
 
-        // Update confirmed embed
+        // Update confirmed embed with new group info
         await _updateConfirmedEmbed(guild, squad.squad_id);
 
+        // Emit socket event for dashboard
+        const updatedSquad = db.getSquadById(squad.squad_id);
         if (updatedSquad) emitter.emit('squad:updated', updatedSquad);
 
+        // Small delay to avoid Discord rate limits
+        await new Promise((r) => setTimeout(r, 300));
+
       } catch (err) {
-        log.push(`❌ ${squad.squad_id} failed: ${err.message}`);
+        log.push(`❌ ${squad.squad_id} (${squad.team_name}) failed: ${err.message}`);
+        logger.terminalLog('ERROR', `rebalance_groups: failed to assign ${squad.squad_id}`, {
+          error: err.message,
+        });
       }
     }
 
-    // ── Step 3: Refresh all affected group channel listings ───────────────
-    for (const groupNo of groupsToUpdate) {
-      try {
-        await groups.updateGroupListing(groupNo, guild);
-        await new Promise((r) => setTimeout(r, 200));
-      } catch { /* non-critical */ }
-    }
-
-    // ── Step 4: Log action ────────────────────────────────────────────────
+    // Log the action
     await logger.logAction(client, 'GROUPS_REBALANCED', {
       actorId: interaction.user.id,
       targetId: null,
-      description: `${moderator} rebalanced groups. ${assigned} squads assigned to groups: ${[...groupsToUpdate].join(', ')}`,
+      description: `${moderator} rebalanced groups. ${assigned} squads assigned. Groups affected: ${[...groupsUpdated].join(', ')}`,
     }, moderator).catch(() => {});
 
     const summary = [
       `✅ **${assigned}** squad(s) assigned to groups`,
-      `📋 **${groupsToUpdate.size}** group listing(s) updated`,
+      `📋 **${groupsUpdated.size}** group(s) updated: ${[...groupsUpdated].sort((a,b)=>a-b).join(', ')}`,
       '',
       ...log.slice(0, 20),
-      log.length > 20 ? `...and ${log.length - 20} more` : '',
+      log.length > 20 ? `…and ${log.length - 20} more` : '',
     ].filter((l) => l !== '').join('\n');
 
     return interaction.editReply({ content: summary.substring(0, 1900) });
@@ -132,9 +88,7 @@ module.exports = {
 };
 
 /**
- * Update the confirmed-squads embed for a squad after group reassignment.
- * @param {import('discord.js').Guild} guild
- * @param {string} squadId
+ * Update the confirmed-squads embed for a squad after group assignment.
  */
 async function _updateConfirmedEmbed(guild, squadId) {
   try {
