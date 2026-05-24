@@ -44,6 +44,9 @@ function buildRegistrationConfirmedEmbed(squad, jumpUrl) {
       { name: 'Squad ID', value: squad.squad_id, inline: true },
       { name: 'Team Name', value: squad.team_name, inline: true },
       { name: 'Leader', value: `<@${squad.leader_id}>`, inline: true },
+      { name: 'Group', value: squad.group_no != null ? `Group ${squad.group_no}` : 'Pending assignment', inline: true },
+      { name: 'Squad No.', value: String(squad.squad_no ?? '—'), inline: true },
+      { name: 'Status', value: squad.status ?? 'active', inline: true },
       { name: 'Players', value: playerMentions },
       { name: 'Game UIDs', value: uidText },
       { name: 'Registration', value: jumpUrl ? `[Jump to message](${jumpUrl})` : 'N/A' }
