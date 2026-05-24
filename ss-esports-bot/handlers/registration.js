@@ -16,10 +16,10 @@ const emitter = require('../bridge/emitter');
 // ─────────────────────────────────────────────
 // Channel / Role / Emoji constants
 // ─────────────────────────────────────────────
-const REGISTRATION_CHANNEL_ID = '1502217324059431064';
+const REGISTRATION_CHANNEL_ID = '1508088986923700335';
 const CONFIRMED_SQUADS_CHANNEL_ID = '1502217351897288847';
 const VC_COUNTER_CHANNEL_ID = '1502217617522425966';
-const REGISTERED_ROLE_ID = '1502219695791538226';
+const REGISTERED_ROLE_ID = '1508090416694689852';
 
 const EMOJI_CROSS = '<a:animatedCross:1438443052170608793>';
 const EMOJI_TICK = '<a:rga_tick1:1407368712402767952>';

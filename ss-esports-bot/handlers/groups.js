@@ -10,7 +10,7 @@ const db = require('../database/db');
 const embedBuilder = require('../utils/embedBuilder');
 const logger = require('../utils/logger');
 
-const GROUP_CATEGORY_ID = '1502223431645794355';
+const GROUP_CATEGORY_ID = '1508092308527124490';
 
 // ─────────────────────────────────────────────
 // Public API

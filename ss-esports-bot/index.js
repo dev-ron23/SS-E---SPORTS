@@ -19,7 +19,7 @@ const { startBridgeServer } = require('./bridge/server');
 // ─────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────
-const REGISTRATION_CHANNEL_ID = '1502217324059431064';
+const REGISTRATION_CHANNEL_ID = '1508088986923700335';
 
 // ─────────────────────────────────────────────
 // Client setup

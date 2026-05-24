@@ -48,6 +48,8 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|login|denied).*)',
+    // Exclude ALL api routes, static files, images, and auth pages.
+    // API routes handle their own auth via getServerSession / Bearer token.
+    '/((?!api/|_next/static|_next/image|favicon.ico|login|denied).*)',
   ],
 }

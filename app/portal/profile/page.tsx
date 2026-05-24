@@ -293,14 +293,28 @@ export default function PortalProfilePage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/player/${discordId}`).then((r) => r.json())
+      const raw = await fetch(`/api/player/${discordId}`)
+      // If we got a redirect or non-JSON response (e.g. middleware redirect to login),
+      // surface it as an error rather than silently showing "Not Registered"
+      if (!raw.ok && raw.status !== 200) {
+        if (raw.status === 401 || raw.status === 403) {
+          setError('Session expired. Please sign out and sign in again.')
+        } else if (raw.status === 502) {
+          setError('Tournament server is offline. Please try again later.')
+        } else {
+          setError(`Server error (${raw.status}). Please try again.`)
+        }
+        setData(null)
+        return
+      }
+      const res = await raw.json()
       if (res.success) {
         if (res.data) {
           setData(res.data)
           setFormTeamName(res.data.squad.team_name)
           setFormUid(res.data.squad.player_uids?.[discordId] ?? '')
         } else {
-          setData(null)
+          setData(null) // genuinely not registered
         }
       } else {
         setData(null)
@@ -308,7 +322,7 @@ export default function PortalProfilePage() {
       }
     } catch {
       setData(null)
-      setError('Failed to load your squad data.')
+      setError('Network error. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -463,6 +477,19 @@ export default function PortalProfilePage() {
             <br />
             <span className="font-mono text-xs text-white/30">{discordId}</span>
           </div>
+          {error && (
+            <button
+              onClick={fetchMySquad}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium mx-auto transition-all hover:brightness-110"
+              style={{
+                background: 'rgba(0,212,255,0.08)',
+                border: '1px solid rgba(0,212,255,0.25)',
+                color: '#00d4ff',
+              }}
+            >
+              Try Again
+            </button>
+          )}
         </motion.div>
       </div>
     )
