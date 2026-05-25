@@ -371,14 +371,14 @@ function UserDetailCard() {
     )
   }
 
-  const displayName = profile?.global_name ?? profile?.username ?? session?.user?.name ?? 'Unknown'
-  const accentColor = profile?.accent_color
-    ? `#${profile?.accent_color?.toString(16).padStart(6, '0')}`
+  const displayName = (profile?.global_name ?? profile?.username ?? session?.user?.name ?? 'Unknown') as string
+  const accentColor = profile?.accent_color != null
+    ? `#${(profile.accent_color as number).toString(16).padStart(6, '0')}`
     : '#00d4ff'
-  const statusColor = STATUS_COLORS[presence.status] ?? STATUS_COLORS.offline
+  const statusColor = (STATUS_COLORS[presence.status as keyof typeof STATUS_COLORS]) ?? STATUS_COLORS.offline
 
-  // At this point profile is guaranteed non-null (early returns above handle null cases)
-  const p = profile!
+  // profile is non-null here — all null cases returned early above
+  const p = profile as NonNullable<typeof profile>
 
   return (
     <motion.div
