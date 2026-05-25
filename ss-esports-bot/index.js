@@ -212,15 +212,26 @@ client.on('error', (err) => {
   logger.terminalLog('ERROR', 'Discord client error', { error: err.message });
 });
 
-// Timeout: if bot isn't ready within 30s, log and exit so EnderCloud restarts it
+// Timeout: if bot isn't ready within 60s, log and exit so EnderCloud restarts it
 const loginTimeout = setTimeout(() => {
-  logger.terminalLog('ERROR', 'Bot failed to become ready within 30 seconds — check BOT_TOKEN and internet connectivity');
+  logger.terminalLog('ERROR', 'Bot failed to become ready within 60 seconds — Discord gateway may be blocked on this server. Check if gateway.discord.gg:443 is accessible.');
   process.exit(1);
-}, 30000);
+}, 60000);
 
 client.once('ready', () => clearTimeout(loginTimeout));
 
 logger.terminalLog('INFO', `Attempting Discord login...`);
+logger.terminalLog('INFO', `Node version: ${process.version} | Platform: ${process.platform}`);
+
+// Test Discord API reachability before login
+const https = require('https');
+https.get('https://discord.com/api/v10/gateway', (res) => {
+  logger.terminalLog('INFO', `Discord API reachable — HTTP ${res.statusCode}`);
+  res.resume();
+}).on('error', (err) => {
+  logger.terminalLog('ERROR', `Discord API NOT reachable: ${err.message} — this server may be blocking Discord`);
+});
+
 client.login(token).catch((err) => {
   logger.terminalLog('ERROR', 'Failed to login', { error: err.message });
   process.exit(1);
