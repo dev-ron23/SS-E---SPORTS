@@ -238,7 +238,7 @@ async function confirmRegistration(message, parsed, guild) {
  * @param {string[]} playerIds
  */
 async function assignRegisteredRole(guild, playerIds) {
-  for (const playerId of playerIds) {
+  await Promise.all(playerIds.map(async (playerId) => {
     try {
       const member = await guild.members.fetch(playerId);
       await member.roles.add(REGISTERED_ROLE_ID);
@@ -247,7 +247,7 @@ async function assignRegisteredRole(guild, playerIds) {
         error: err.message,
       });
     }
-  }
+  }));
 }
 
 /**

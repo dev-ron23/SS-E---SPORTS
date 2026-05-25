@@ -325,7 +325,7 @@ async function removeSquadFromGroup(squadId, guild) {
  * Assign a group role to a list of player IDs.
  */
 async function assignGroupRole(guild, playerIds, roleId) {
-  for (const playerId of playerIds) {
+  await Promise.all(playerIds.map(async (playerId) => {
     try {
       const member = await guild.members.fetch(playerId);
       await member.roles.add(roleId);
@@ -334,14 +334,14 @@ async function assignGroupRole(guild, playerIds, roleId) {
         error: err.message,
       });
     }
-  }
+  }));
 }
 
 /**
  * Revoke a group role from a list of player IDs.
  */
 async function revokeGroupRole(guild, playerIds, roleId) {
-  for (const playerId of playerIds) {
+  await Promise.all(playerIds.map(async (playerId) => {
     try {
       const member = await guild.members.fetch(playerId);
       await member.roles.remove(roleId);
@@ -350,7 +350,7 @@ async function revokeGroupRole(guild, playerIds, roleId) {
         error: err.message,
       });
     }
-  }
+  }));
 }
 
 /**
