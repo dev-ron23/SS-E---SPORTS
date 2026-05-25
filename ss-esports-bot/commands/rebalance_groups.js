@@ -35,6 +35,10 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true });
 
+    // ── Step 0: Clean cancelled squads out of groups_table ────────────────
+    const cleaned = groups.cleanupCancelledFromGroups();
+    logger.terminalLog('INFO', `Rebalance: cleaned ${cleaned} cancelled squad ID(s) from groups_table`);
+
     // ── Gather unassigned squads ──────────────────────────────────────────
     const allSquads = db.getAllActiveSquads();
     const unassigned = allSquads.filter((s) => s.group_no === null);
@@ -110,6 +114,7 @@ module.exports = {
 
     // ── Reply summary ─────────────────────────────────────────────────────
     const summary = [
+      cleaned > 0 ? `🧹 **${cleaned}** cancelled squad slot(s) freed up` : '',
       `✅ **${assigned}** squad(s) assigned`,
       `📋 **${groupsUpdated.size}** group(s) updated: ${[...groupsUpdated].sort((a, b) => a - b).join(', ')}`,
       `🔄 Group listings, confirmed embeds, action logs & dashboard all synced`,

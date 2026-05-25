@@ -33,6 +33,9 @@ const MAX_PER_GROUP = 12;
  * @returns {Promise<number>} The assigned group number
  */
 async function assignSquadToGroup(squad, guild) {
+  // ── Clean stale cancelled IDs first so slot count is accurate ───────────
+  cleanupCancelledFromGroups();
+
   // ── Pick the target group (fill-first) ──────────────────────────────────
   const groupNo = _pickGroupNo();
 
@@ -76,6 +79,7 @@ async function assignSquadToGroup(squad, guild) {
 /**
  * Pick the group number to assign the next squad to.
  * Finds the lowest-numbered group with fewer than MAX_PER_GROUP active squads.
+ * Cancelled/edited squads are NOT counted toward the slot limit.
  * If all groups are full or no groups exist, returns the next new group number.
  *
  * @returns {number}
@@ -84,7 +88,7 @@ function _pickGroupNo() {
   const allGroups = db.getAllGroups().sort((a, b) => a.group_no - b.group_no);
 
   for (const group of allGroups) {
-    // Count only active squads in this group
+    // Count only active squads — cancelled ones free up the slot
     const activeCount = group.squad_ids.filter((id) => {
       const s = db.getSquadById(id);
       return s && s.status === 'active';
@@ -100,6 +104,45 @@ function _pickGroupNo() {
     ? Math.max(...allGroups.map((g) => g.group_no))
     : 0;
   return maxGroupNo + 1;
+}
+
+/**
+ * Remove cancelled/edited squad IDs from all groups_table records.
+ * Call this before rebalancing or assigning to keep the DB clean.
+ * Returns the number of stale IDs removed.
+ *
+ * @returns {number} count of removed stale squad IDs
+ */
+function cleanupCancelledFromGroups() {
+  const allGroups = db.getAllGroups();
+  let removed = 0;
+
+  for (const group of allGroups) {
+    const before = group.squad_ids.length;
+    const activeOnly = group.squad_ids.filter((id) => {
+      const s = db.getSquadById(id);
+      return s && s.status === 'active';
+    });
+
+    if (activeOnly.length !== before) {
+      // Write cleaned list back to DB
+      db.upsertGroup({
+        group_no:        group.group_no,
+        channel_id:      group.channel_id,
+        role_id:         group.role_id,
+        squad_ids:       activeOnly,
+        match_room_id:   group.match_room_id,
+        match_password:  group.match_password,
+        match_started_at: group.match_started_at,
+      });
+      removed += before - activeOnly.length;
+      logger.terminalLog('INFO',
+        `Cleaned group ${group.group_no}: removed ${before - activeOnly.length} cancelled squad(s)`
+      );
+    }
+  }
+
+  return removed;
 }
 
 /**
@@ -363,6 +406,7 @@ module.exports = {
   buildGroupListingEmbed,
   assignGroupRole,
   revokeGroupRole,
+  cleanupCancelledFromGroups,
   GROUP_CATEGORY_ID,
   MAX_PER_GROUP,
 };
