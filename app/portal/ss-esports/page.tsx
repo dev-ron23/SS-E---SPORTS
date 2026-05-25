@@ -371,8 +371,8 @@ function UserDetailCard() {
     )
   }
 
-  const displayName = profile.global_name ?? profile.username
-  const accentColor = profile.accent_color
+  const displayName = profile?.global_name ?? profile?.username ?? session?.user?.name ?? 'Unknown'
+  const accentColor = profile?.accent_color
     ? `#${profile.accent_color.toString(16).padStart(6, '0')}`
     : '#00d4ff'
   const statusColor = STATUS_COLORS[presence.status] ?? STATUS_COLORS.offline
