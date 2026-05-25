@@ -207,6 +207,20 @@ if (!token) {
   process.exit(1);
 }
 
+// Catch any unhandled client errors
+client.on('error', (err) => {
+  logger.terminalLog('ERROR', 'Discord client error', { error: err.message });
+});
+
+// Timeout: if bot isn't ready within 30s, log and exit so EnderCloud restarts it
+const loginTimeout = setTimeout(() => {
+  logger.terminalLog('ERROR', 'Bot failed to become ready within 30 seconds — check BOT_TOKEN and internet connectivity');
+  process.exit(1);
+}, 30000);
+
+client.once('ready', () => clearTimeout(loginTimeout));
+
+logger.terminalLog('INFO', `Attempting Discord login...`);
 client.login(token).catch((err) => {
   logger.terminalLog('ERROR', 'Failed to login', { error: err.message });
   process.exit(1);
