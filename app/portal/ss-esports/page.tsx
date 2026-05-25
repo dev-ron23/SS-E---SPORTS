@@ -117,7 +117,7 @@ function CreditCard({ entry, index }: { entry: CreditEntry; index: number }) {
 
   const displayName = entry.display_name ?? profile?.global_name ?? profile?.username ?? entry.discord_id
   const accentColor = profile?.accent_color
-    ? `#${profile.accent_color.toString(16).padStart(6, '0')}`
+    ? `#${profile?.accent_color?.toString(16).padStart(6, '0')}`
     : '#00d4ff'
 
   const statusColor = STATUS_COLORS[presence.status] ?? STATUS_COLORS.offline
@@ -152,7 +152,7 @@ function CreditCard({ entry, index }: { entry: CreditEntry; index: number }) {
       {/* Banner */}
       <div className="relative h-28 overflow-hidden">
         {profile?.bannerUrl ? (
-          <Image src={profile.bannerUrl} alt="" fill className="object-cover" unoptimized />
+          <Image src={profile?.bannerUrl} alt="" fill className="object-cover" unoptimized />
         ) : (
           <div
             className="absolute inset-0"
@@ -173,7 +173,7 @@ function CreditCard({ entry, index }: { entry: CreditEntry; index: number }) {
           {profile?.avatarUrl ? (
             <div className="relative">
               <Image
-                src={profile.avatarUrl}
+                src={profile?.avatarUrl}
                 alt={displayName}
                 width={80}
                 height={80}
@@ -186,9 +186,9 @@ function CreditCard({ entry, index }: { entry: CreditEntry; index: number }) {
                 unoptimized
               />
               {/* Avatar decoration / profile effect */}
-              {profile.avatarDecorationUrl && (
+              {profile?.avatarDecorationUrl && (
                 <Image
-                  src={profile.avatarDecorationUrl}
+                  src={profile?.avatarDecorationUrl}
                   alt=""
                   width={100}
                   height={100}
@@ -373,9 +373,12 @@ function UserDetailCard() {
 
   const displayName = profile?.global_name ?? profile?.username ?? session?.user?.name ?? 'Unknown'
   const accentColor = profile?.accent_color
-    ? `#${profile.accent_color.toString(16).padStart(6, '0')}`
+    ? `#${profile?.accent_color?.toString(16).padStart(6, '0')}`
     : '#00d4ff'
   const statusColor = STATUS_COLORS[presence.status] ?? STATUS_COLORS.offline
+
+  // At this point profile is guaranteed non-null (early returns above handle null cases)
+  const p = profile!
 
   return (
     <motion.div
@@ -390,8 +393,8 @@ function UserDetailCard() {
     >
       {/* Banner */}
       <div className="relative h-36 overflow-hidden">
-        {profile.bannerUrl ? (
-          <Image src={profile.bannerUrl} alt="" fill className="object-cover" unoptimized />
+        {p.bannerUrl ? (
+          <Image src={p.bannerUrl} alt="" fill className="object-cover" unoptimized />
         ) : (
           <div
             className="absolute inset-0"
@@ -410,10 +413,10 @@ function UserDetailCard() {
         {/* Avatar row */}
         <div className="flex items-end gap-4 -mt-12 mb-4">
           <div className="relative shrink-0">
-            {profile.avatarUrl ? (
+            {p.avatarUrl ? (
               <div className="relative">
                 <Image
-                  src={profile.avatarUrl}
+                  src={p.avatarUrl}
                   alt={displayName}
                   width={88}
                   height={88}
@@ -425,9 +428,9 @@ function UserDetailCard() {
                   }}
                   unoptimized
                 />
-                {profile.avatarDecorationUrl && (
+                {p.avatarDecorationUrl && (
                   <Image
-                    src={profile.avatarDecorationUrl}
+                    src={p.avatarDecorationUrl}
                     alt=""
                     width={108}
                     height={108}
@@ -449,7 +452,7 @@ function UserDetailCard() {
 
           <div className="pb-1 flex-1 min-w-0">
             <h2 className="font-orbitron font-black text-white text-xl leading-tight truncate">{displayName}</h2>
-            <p className="font-mono text-xs text-white/30 mt-0.5">@{profile.username}</p>
+            <p className="font-mono text-xs text-white/30 mt-0.5">@{p.username}</p>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="size-2 rounded-full inline-block" style={{ background: statusColor }} />
               <span className="text-xs" style={{ color: statusColor }}>{STATUS_LABELS[presence.status]}</span>
@@ -465,7 +468,7 @@ function UserDetailCard() {
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <p className="text-xs font-mono uppercase tracking-widest text-white/30">Discord ID</p>
-            <p className="font-mono text-sm text-white/70">{profile.id}</p>
+            <p className="font-mono text-sm text-white/70">{p.id}</p>
           </div>
 
           {/* Account created */}
@@ -478,7 +481,7 @@ function UserDetailCard() {
             </p>
             <p className="text-sm text-white/70">
               {/* Discord snowflake → timestamp */}
-              {new Date(Number((BigInt(profile.id) >> BigInt(22)) + BigInt(1420070400000))).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+              {new Date(Number((BigInt(p.id) >> BigInt(22)) + BigInt(1420070400000))).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
 
