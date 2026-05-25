@@ -269,25 +269,25 @@ function CreditCard({ entry, index }: { entry: CreditEntry; index: number }) {
 function UserDetailCard() {
   const { data: session, status } = useSession()
   const [profile, setProfile] = useState<DiscordUserProfile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
   const [presence, setPresence] = useState<PresenceData>({ status: 'offline' })
   const [guildMember, setGuildMember] = useState<GuildMemberInfo | null>(null)
 
   const discordId = session?.user?.id ?? ''
 
   useEffect(() => {
-    if (!discordId) return
+    if (!discordId) { setProfileLoading(false); return }
 
     fetch(`/api/discord/user/${discordId}`)
       .then((r) => r.ok ? r.json() : null)
-      .then((d) => d && setProfile(d))
-      .catch(() => null)
+      .then((d) => { setProfile(d); setProfileLoading(false) })
+      .catch(() => setProfileLoading(false))
 
     fetch(`/api/discord/presence/${discordId}`)
       .then((r) => r.ok ? r.json() : { status: 'offline' })
       .then(setPresence)
-      .catch(() => null)
+      .catch(() => setPresence({ status: 'offline' }))
 
-    // Fetch guild member info (join date, roles, nickname)
     fetch(`/api/discord/member/${discordId}`)
       .then((r) => r.ok ? r.json() : null)
       .then((d) => d && setGuildMember(d))
@@ -329,9 +329,45 @@ function UserDetailCard() {
     )
   }
 
-  if (status === 'loading' || !profile) {
+  // Still loading session
+  if (status === 'loading' || (profileLoading && !session)) {
     return (
       <div className="rounded-2xl overflow-hidden animate-pulse" style={{ background: 'rgba(255,255,255,0.04)', height: '320px' }} />
+    )
+  }
+
+  // Session exists but Discord API failed — show basic info from session
+  if (!profile && session) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl p-6 space-y-4"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(0,212,255,0.15)',
+        }}
+      >
+        <div className="flex items-center gap-4">
+          {session.user?.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={session.user.image} alt="" className="size-16 rounded-2xl ring-2 ring-[rgba(0,212,255,0.3)]" />
+          ) : (
+            <div className="size-16 rounded-2xl flex items-center justify-center font-orbitron font-black text-2xl"
+              style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff' }}>
+              {session.user?.name?.[0]?.toUpperCase() ?? '?'}
+            </div>
+          )}
+          <div>
+            <p className="font-orbitron font-bold text-white text-lg">{session.user?.name}</p>
+            <p className="font-mono text-xs text-white/30 mt-0.5">{discordId}</p>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className="size-2 rounded-full inline-block bg-[#00d4ff]" />
+              <span className="text-xs text-[#00d4ff]">Signed in</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     )
   }
 
