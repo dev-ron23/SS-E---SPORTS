@@ -24,7 +24,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Build broadcast embed (Requirement 14.1)
     const embed = embedBuilder.buildBroadcastEmbed(message, moderator);

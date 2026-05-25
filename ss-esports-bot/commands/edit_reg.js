@@ -48,7 +48,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Find existing squad by previous team name (Requirement 6.1)
     const oldSquad = db.getSquadByTeamName(previousTeamName);

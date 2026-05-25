@@ -27,7 +27,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Call moderation.warnPlayer (Requirements 16.1-16.5)
     const updatedPlayer = await moderation.warnPlayer(targetUser.id, reason, guild, moderator, client);

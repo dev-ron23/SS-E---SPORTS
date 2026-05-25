@@ -22,7 +22,7 @@ module.exports = {
     const guild = interaction.guild;
     const client = interaction.client;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Call matchManager.startMatch (Requirements 11.1-11.3)
     await matchManager.startMatch(groupNo, guild, client);

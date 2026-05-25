@@ -21,7 +21,7 @@ module.exports = {
   async execute(interaction) {
     const leaderUser = interaction.options.getUser('leader');
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Query DB for squad led by this user (Requirement 8.4)
     const squad = db.getSquadByLeader(leaderUser.id);

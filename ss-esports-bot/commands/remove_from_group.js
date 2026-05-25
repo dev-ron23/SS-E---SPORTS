@@ -27,7 +27,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Call moderation.removeFromGroup (Requirements 17.1-17.4)
     await moderation.removeFromGroup(targetUser.id, groupNo, guild, moderator, client);

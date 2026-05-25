@@ -21,7 +21,7 @@ module.exports = {
   async execute(interaction) {
     const targetUser = interaction.options.getUser('user');
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Query DB for player's active squad membership (Requirement 8.1)
     const playerSquad = db.getActivePlayerSquad(targetUser.id);

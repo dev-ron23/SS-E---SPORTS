@@ -19,7 +19,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Call moderation.clearRegChat (Requirements 18.1-18.3)
     const deletedCount = await moderation.clearRegChat(guild, moderator, client);

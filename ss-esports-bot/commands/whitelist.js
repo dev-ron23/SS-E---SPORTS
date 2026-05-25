@@ -58,7 +58,7 @@ module.exports = {
     const moderator = interaction.user.tag;
     const client = interaction.client;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Load current whitelist from settings
     const rawUsers = db.getSetting('automod_whitelist_users') ?? '[]';

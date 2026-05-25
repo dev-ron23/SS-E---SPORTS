@@ -34,7 +34,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Parse squad IDs
     const rawIds = interaction.options.getString('squad_ids');

@@ -24,7 +24,7 @@ module.exports = {
   async execute(interaction) {
     const userId = interaction.user.id;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // ── 1. Find the player's active squad ──────────────────────────────────
     const playerRow = db.getActivePlayerSquad(userId);

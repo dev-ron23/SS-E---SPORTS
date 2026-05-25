@@ -25,7 +25,7 @@ module.exports = {
     const guild = interaction.guild;
     const client = interaction.client;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Parse format to extract squad ID and position (Requirement 12.1)
     const parts = format.trim().split(/\s+/);

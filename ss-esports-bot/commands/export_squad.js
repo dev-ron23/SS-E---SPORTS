@@ -16,7 +16,7 @@ module.exports = {
     .setDescription('Export all squad data (CSV + TXT)'),
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Query all active squads from DB (Requirement 9.1)
     const squads = db.getAllActiveSquads();

@@ -28,7 +28,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Build DM embed (Requirement 14.2)
     const embed = embedBuilder.buildDMEmbed(description, moderator);

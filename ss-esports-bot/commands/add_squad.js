@@ -30,7 +30,7 @@ module.exports = {
     const format = interaction.options.getString('format');
     const guild = interaction.guild;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Parse the format string (Requirement 7.2)
     const parsed = parser.parseRegistration(format);

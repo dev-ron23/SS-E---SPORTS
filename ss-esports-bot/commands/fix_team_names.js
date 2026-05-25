@@ -39,7 +39,7 @@ module.exports = {
     const moderator = interaction.user.tag;
     const dryRun = interaction.options.getBoolean('dry_run') ?? false;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     const allSquads = db.getAllActiveSquads();
     const squadsWithMsg = allSquads.filter(

@@ -183,7 +183,7 @@ client.on('interactionCreate', async (interaction) => {
       stack: err.stack,
     });
 
-    const errorMsg = { content: '❌ An error occurred while executing this command.', ephemeral: true };
+    const errorMsg = { content: '❌ An error occurred while executing this command.', flags: 64 };
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp(errorMsg).catch(() => {});
     } else {
@@ -222,15 +222,6 @@ client.once('ready', () => clearTimeout(loginTimeout));
 
 logger.terminalLog('INFO', `Attempting Discord login...`);
 logger.terminalLog('INFO', `Node version: ${process.version} | Platform: ${process.platform}`);
-
-// Test Discord API reachability before login
-const https = require('https');
-https.get('https://discord.com/api/v10/gateway', (res) => {
-  logger.terminalLog('INFO', `Discord API reachable — HTTP ${res.statusCode}`);
-  res.resume();
-}).on('error', (err) => {
-  logger.terminalLog('ERROR', `Discord API NOT reachable: ${err.message} — this server may be blocking Discord`);
-});
 
 client.login(token).catch((err) => {
   logger.terminalLog('ERROR', 'Failed to login', { error: err.message });

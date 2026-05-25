@@ -27,7 +27,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Call moderation.mutePlayer (Requirements 15.1-15.4)
     await moderation.mutePlayer(targetUser.id, guild, moderator, client, reason);

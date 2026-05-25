@@ -24,7 +24,7 @@ module.exports = {
     const guild = interaction.guild;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Set registration_locked=1 in DB settings (Requirement 13.1)
     db.setSetting('registration_locked', '1');

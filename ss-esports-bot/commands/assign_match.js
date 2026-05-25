@@ -30,7 +30,7 @@ module.exports = {
     const guild = interaction.guild;
     const client = interaction.client;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // Call matchManager.assignMatch (Requirements 10.1-10.4)
     await matchManager.assignMatch(groupNo, roomId, roomPassword, guild, client);

@@ -33,7 +33,7 @@ module.exports = {
     const client = interaction.client;
     const moderator = interaction.user.tag;
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: 64 });
 
     // ── Step 0: Clean cancelled squads out of groups_table ────────────────
     const cleaned = groups.cleanupCancelledFromGroups();
